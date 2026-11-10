@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freelance Money Split</title>
+
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: #111;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        padding: 40px 0;
+    }
+
+    .container {
+        width: 92%;
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+    }
+
+    .subtitle {
+        color: #888;
+        margin-bottom: 24px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    button {
+        border: 1px solid #333;
+        background: #1b1b1b;
+        color: #fff;
+        padding: 11px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    button:hover { background: #242424; }
+
+    .primary {
+        background: #fff;
+        color: #111;
+        border-color: #fff;
+        font-weight: 700;
+    }
+
+    .primary:hover { background: #ddd; }
+
+    .input-box,
+    .card,
+    .history-box {
+        background: #1b1b1b;
+        border: 1px solid #292929;
+        border-radius: 14px;
+    }
+
+    .input-box {
+        padding: 18px;
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        color: #999;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .input-row {
+        display: grid;
+        grid-template-columns: 120px 1fr 140px;
+        gap: 10px;
+    }
+
+    select,
+    input,
+    textarea {
+        width: 100%;
+        background: #111;
+        border: 1px solid #333;
+        color: white;
+        border-radius: 10px;
+        padding: 12px;
+        font-size: 16px;
+        outline: none;
+    }
+
+    textarea {
+        min-height: 80px;
+        resize: vertical;
+        margin-top: 10px;
+    }
+
+    .income-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .expense-row {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .expense-row.income-mode {
+        grid-template-columns: 1fr;
+    }
+
+    .expense-source {
+        display: none;
+        grid-column: 1 / -1;
+    }
+
+    .dashboard {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .summary .card {
+        padding: 18px;
+    }
+
+    .hero-card {
+        min-height: 154px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .hero-card.balance-card {
+        background: #f4f4f4;
+        color: #111;
+        border-color: #f4f4f4;
+    }
+
+    .hero-card.balance-card .summary-label {
+        color: #666;
+    }
+
+    .hero-card.balance-card .summary-value {
+        color: #111;
+    }
+
+    .hero-card.savings-card {
+        background: #202020;
+        border-color: #3a3a3a;
+    }
+
+    .hero-card .summary-label {
+        margin-bottom: 12px;
+    }
+
+    .hero-card .summary-value {
+        font-size: clamp(30px, 4vw, 42px);
+        line-height: 1.05;
+        letter-spacing: -0.5px;
+    }
+
+    .mini-stats {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .mini-card {
+        padding: 13px 15px !important;
+    }
+
+    .mini-card .summary-label {
+        margin-bottom: 6px;
+        font-size: 11px;
+    }
+
+    .mini-card .summary-value {
+        font-size: 15px;
+    }
+
+    .summary-label {
+        color: #888;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .summary-value {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    /* ---------- Income Split ---------- */
+    .compact-split {
+        height: 100%;
+        margin-bottom: 0 !important;
+        padding: 18px;
+    }
+
+    .compact-split .split-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        margin: 0 0 14px;
+        color: #aaa;
+    }
+
+    .compact-split .results {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .compact-split .result-card {
+        padding: 13px 14px;
+        min-width: 0;
+        border-radius: 11px;
+        background: #151515;
+        border-color: #303030;
+    }
+
+    .compact-split .result-card:first-child {
+        border-left: 3px solid #fff;
+    }
+
+    .compact-split .result-card:last-child {
+        border-left: 3px solid #666;
+    }
+
+    .compact-split .left {
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .compact-split .icon {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+        border-radius: 8px;
+        background: #222;
+        flex: 0 0 28px;
+    }
+
+    .compact-split .name {
+        font-size: 13px;
+        line-height: 1.2;
+        font-weight: 600;
+    }
+
+    .compact-split .percentage {
+        font-size: 11px;
+        margin-top: 3px;
+        color: #777;
+    }
+
+    .compact-split .amount {
+        font-size: 14px;
+        white-space: nowrap;
+        margin-left: 12px;
+    }
+
+    .compact-split .split-bar {
+        height: 6px;
+        display: flex;
+        overflow: hidden;
+        border-radius: 99px;
+        background: #2a2a2a;
+        margin: 2px 0 13px;
+    }
+
+    .compact-split .split-bar-savings {
+        width: 40%;
+        background: #fff;
+    }
+
+    .compact-split .split-bar-safe {
+        width: 60%;
+        background: #555;
+    }
+
+    .compact-split .total {
+        margin-top: 0;
+        padding: 12px 13px;
+        font-size: 12px;
+        border-radius: 10px;
+        background: #222;
+        color: #fff;
+        border: 1px solid #303030;
+    }
+
+    .compact-split .total span:last-child {
+        font-size: 13px;
+    }
+
+    .positive { color: #8fd694; }
+    .negative { color: #ff8f8f; }
+
+    .split-title {
+        font-size: 13px;
+        color: #888;
+        margin: 0 0 10px;
+    }
+
+    .results {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .result-card {
+        padding: 15px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .icon {
+        font-size: 22px;
+    }
+
+    .name {
+        font-weight: 600;
+    }
+
+    .percentage {
+        color: #777;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .amount {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .total {
+        margin-top: 15px;
+        padding: 18px;
+        border-radius: 14px;
+        background: #fff;
+        color: #111;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+    }
+
+    .history-box {
+        overflow: hidden;
+    }
+
+    .monthly-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .monthly-table {
+        width: 100%;
+        min-width: 560px;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .monthly-table th,
+    .monthly-table td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #292929;
+    }
+
+    .monthly-table th {
+        color: #777;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .monthly-table td {
+        font-size: 13px;
+    }
+
+    .monthly-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .monthly-month {
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+
+    .monthly-count {
+        display: block;
+        color: #777;
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    .monthly-number {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .monthly-table th:not(:first-child),
+    .monthly-table td:not(:first-child) {
+        text-align: right;
+    }
+
+    .history-header {
+        padding: 17px 18px;
+        border-bottom: 1px solid #292929;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .history-title {
+        font-weight: 700;
+    }
+
+    .history {
+        display: grid;
+    }
+
+    .transaction {
+        padding: 15px 18px;
+        border-bottom: 1px solid #292929;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .transaction:last-child {
+        border-bottom: 0;
+    }
+
+    .transaction-left {
+        min-width: 0;
+    }
+
+    .transaction-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        word-break: break-word;
+    }
+
+    .transaction-meta {
+        color: #777;
+        font-size: 12px;
+    }
+
+    .transaction-right {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .transaction-amount {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .delete-btn {
+        margin-top: 7px;
+        color: #999;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font-size: 12px;
+    }
+
+    .delete-btn:hover {
+        color: #fff;
+        background: transparent;
+    }
+
+    .empty {
+        padding: 28px 18px;
+        text-align: center;
+        color: #666;
+    }
+
+    .status {
+        margin-top: 12px;
+        color: #666;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .note {
+        margin-top: 18px;
+        color: #666;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 650px) {
+        .input-row,
+        .expense-row {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard {
+            grid-template-columns: 1fr;
+        }
+
+        .compact-split {
+            height: auto;
+        }
+
+        .summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .transaction {
+            align-items: flex-start;
+        }
+
+        .transaction-right {
+            text-align: right;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Freelance Money Split</h1>
+    <div class="subtitle">
+        Catat pemasukan dan pengeluaran freelance kamu.
+    </div>
+
+    <div class="toolbar">
+        <button class="primary" onclick="saveToFile()">Simpan JSON</button>
+        <button onclick="reloadData()">Muat Ulang JSON</button>
+        <button onclick="loadFromFile()">Pilih Folder JSON</button>
+        <button onclick="exportCSV()">Export CSV</button>
+        <button onclick="clearAll()">Hapus Semua Data</button>
+    </div>
+
+    <div class="input-box">
+        <label>CATAT TRANSAKSI</label>
+
+        <div class="input-row">
+            <select id="type" onchange="updateForm()">
+                <option value="income">Pemasukan</option>
+                <option value="expense">Pengeluaran</option>
+            </select>
+
+            <input
+                id="description"
+                type="text"
+                placeholder="Contoh: MV commission"
+                autocomplete="off"
+            >
+
+            <input
+                id="amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Jumlah ($)"
+            >
+        </div>
+
+        <div class="expense-row income-mode" id="expenseRow">
+            <select id="category">
+                <option value="Kebutuhan + Operasional">Kebutuhan + Operasional</option>
+                <option value="Fun">Fun</option>
+                <option value="Dana Darurat">Dana Darurat</option>
+                <option value="Tabungan Tujuan">Tabungan Tujuan</option>
+                <option value="Lainnya">Lainnya</option>
+            </select>
+
+            <input id="note" type="text" placeholder="Catatan (opsional)">
+
+            <select id="expenseSource" class="expense-source">
+                <option value="safe">Ambil dari Uang Aman Diambil</option>
+                <option value="savings">Ambil dari Tabungan</option>
+            </select>
+        </div>
+
+        <button class="primary income-btn" onclick="addTransaction()">
+            Tambah Transaksi
+        </button>
+
+        <div class="status" id="fileStatus">
+            Pemasukan dibagi otomatis: 40% Tabungan + 60% Uang Aman Diambil. Letakkan freelance-money-data.json satu folder dengan HTML, lalu pilih folder tersebut sekali. Browser akan mencoba memuat ulang data otomatis setiap halaman dibuka.
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="summary">
+            <div class="card hero-card balance-card">
+                <div class="summary-label">SALDO KESELURUHAN</div>
+                <div class="summary-value" id="balance">$0.00</div>
+            </div>
+
+            <div class="card hero-card savings-card">
+                <div class="summary-label">TOTAL TABUNGAN</div>
+                <div class="summary-value" id="totalSavings">$0.00</div>
+            </div>
+
+            <div class="mini-stats">
+                <div class="card mini-card">
+                    <div class="summary-label">TOTAL PEMASUKAN</div>
+                    <div class="summary-value positive" id="totalIncome">$0.00</div>
+                </div>
+
+                <div class="card mini-card">
+                    <div class="summary-label">TOTAL PENGELUARAN</div>
+                    <div class="summary-value negative" id="totalExpense">$0.00</div>
+                </div>
+
+                <div class="card mini-card">
+                    <div class="summary-label">AMAN DIAMBIL</div>
+                    <div class="summary-value" id="safeMoney">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-box compact-split">
+            <div class="split-title">PEMBAGIAN SALDO</div>
+
+            <div class="results">
+                <div class="card result-card">
+                    <div class="left">
+                        <div class="icon">🏦</div>
+                        <div>
+                            <div class="name">Tabungan</div>
+                            <div class="percentage">40% dari tiap pemasukan</div>
+                        </div>
+                    </div>
+                    <div class="amount" id="splitSavings">$0.00</div>
+                </div>
+
+                <div class="card result-card">
+                    <div class="left">
+                        <div class="icon">💵</div>
+                        <div>
+                            <div class="name">Aman Diambil</div>
+                            <div class="percentage">60% dari tiap pemasukan</div>
+                        </div>
+                    </div>
+                    <div class="amount" id="splitSafe">$0.00</div>
+                </div>
+            </div>
+
+            <div class="split-bar" aria-label="40% Tabungan, 60% Aman Diambil">
+                <div class="split-bar-savings" id="splitBarSavings"></div>
+                <div class="split-bar-safe" id="splitBarSafe"></div>
+            </div>
+
+            <div class="total">
+                <span>Total Saldo</span>
+                <span id="splitTotal">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-box" style="margin-bottom: 20px;">
+        <div class="history-header">
+            <div class="history-title">Riwayat Bulanan</div>
+            <div class="transaction-meta">Otomatis dari transaksi JSON</div>
+        </div>
+        <div class="monthly-table-wrap">
+            <table class="monthly-table">
+                <thead>
+                    <tr>
+                        <th>Bulan</th>
+                        <th>Pemasukan</th>
+                        <th>Pengeluaran</th>
+                        <th>Selisih</th>
+                    </tr>
+                </thead>
+                <tbody id="monthlyHistory">
+                    <tr><td colspan="4" class="empty">Belum ada riwayat bulanan.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="history-box">
+        <div class="history-header">
+            <div class="history-title">Riwayat Transaksi</div>
+            <div id="transactionCount" class="transaction-meta">0 transaksi</div>
+        </div>
+
+        <div class="history" id="history">
+            <div class="empty">Belum ada transaksi.</div>
+        </div>
+    </div>
+
+    <div class="note">
+        Setiap pemasukan otomatis membentuk dua saldo: 40% Tabungan dan 60% Uang Aman Diambil.
+        Riwayat bulanan dihitung dari semua transaksi yang tersimpan di JSON, sehingga bulan sebelumnya tetap muncul saat berganti bulan.
+        Letakkan file JSON satu folder dengan HTML dan pilih folder itu sekali untuk mengaktifkan simpan otomatis.
+    </div>
+
+</div>
+
+<script>
+let data = {
+    version: 1,
+    transactions: []
+};
+
+let dataDirectoryHandle = null;
+let fileHandle = null;
+let busy = false;
+
+const JSON_FILE_NAME = "freelance-money-data.json";
+const CURRENCY = "$";
+
+// IndexedDB hanya dipakai untuk mengingat izin folder (bukan data transaksi).
+const HANDLE_DB = "freelance-money-split-handles";
+const HANDLE_STORE = "handles";
+const HANDLE_KEY = "dataDirectory";
+
+/* ---------- Helper tampilan ---------- */
+
+function money(value) {
+    const n = Number(value) || 0;
+    const text = Math.abs(n).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+    return (n < 0 ? "-" : "") + CURRENCY + text;
+}
+
+function setStatus(text) {
+    document.getElementById("fileStatus").textContent = text;
+}
+
+function escapeHTML(text) {
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function normalizeData(parsed) {
+    return {
+        version: 1,
+        transactions: parsed.transactions.map(t => ({
+            ...t,
+            amount: Number(t.amount) || 0,
+            currency: CURRENCY,
+            source: t.source || (t.type === "expense" ? "safe" : "")
+        }))
+    };
+}
+
+/* ---------- Simpan handle folder (IndexedDB) ---------- */
+
+function openHandleDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(HANDLE_DB, 1);
+        req.onupgradeneeded = () => req.result.createObjectStore(HANDLE_STORE);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+async function saveHandle(handle) {
+    try {
+        const db = await openHandleDB();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(HANDLE_STORE, "readwrite");
+            tx.objectStore(HANDLE_STORE).put(handle, HANDLE_KEY);
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+    } catch (error) {
+        console.warn("Tidak bisa menyimpan handle folder:", error);
+    }
+}
+
+async function loadSavedHandle() {
+    try {
+        const db = await openHandleDB();
+        const handle = await new Promise((resolve, reject) => {
+            const req = db.transaction(HANDLE_STORE, "readonly")
+                .objectStore(HANDLE_STORE).get(HANDLE_KEY);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => reject(req.error);
+        });
+        db.close();
+        return handle;
+    } catch (error) {
+        return null;
+    }
+}
+
+/* ---------- Akses file JSON ---------- */
+
+async function hasPermission(handle, request) {
+    const options = { mode: "readwrite" };
+
+    try {
+        if ((await handle.queryPermission(options)) === "granted") return true;
+        if (request && (await handle.requestPermission(options)) === "granted") return true;
+    } catch (error) {
+        console.warn(error);
+    }
+
+    return false;
+}
+
+async function readDataFromDirectory(create) {
+    const handle = await dataDirectoryHandle.getFileHandle(
+        JSON_FILE_NAME,
+        { create: create }
+    );
+
+    const file = await handle.getFile();
+    const text = await file.text();
+
+    if (text.trim()) {
+        let parsed;
+
+        try {
+            parsed = JSON.parse(text);
+        } catch (error) {
+            throw new Error("INVALID_JSON");
+        }
+
+        if (!parsed || !Array.isArray(parsed.transactions)) {
+            throw new Error("INVALID_JSON");
+        }
+
+        data = normalizeData(parsed);
+    } else {
+        data = { version: 1, transactions: [] };
+    }
+
+    // fileHandle baru dipakai setelah file terbukti valid,
+    // supaya file yang rusak tidak pernah tertimpa.
+    fileHandle = handle;
+}
+
+async function connectFolder(forcePick, create) {
+    let handle = forcePick
+        ? null
+        : (dataDirectoryHandle || await loadSavedHandle());
+
+    if (handle && !(await hasPermission(handle, true))) {
+        handle = null;
+    }
+
+    if (!handle) {
+        if (!("showDirectoryPicker" in window)) {
+            throw new Error("UNSUPPORTED");
+        }
+
+        handle = await window.showDirectoryPicker({
+            mode: "readwrite",
+            id: "freelance-money-split-data"
+        });
+
+        await saveHandle(handle);
+    }
+
+    dataDirectoryHandle = handle;
+    fileHandle = null;
+
+    await readDataFromDirectory(create);
+}
+
+async function ensureConnected() {
+    if (
+        fileHandle &&
+        dataDirectoryHandle &&
+        await hasPermission(dataDirectoryHandle, true)
+    ) {
+        return;
+    }
+
+    await connectFolder(false, true);
+}
+
+async function writeFile() {
+    if (!fileHandle) throw new Error("NO_FILE");
+
+    const writable = await fileHandle.createWritable();
+
+    try {
+        await writable.write(JSON.stringify(data, null, 2));
+        await writable.close();
+    } catch (error) {
+        try { await writable.abort(); } catch (e) {}
+        throw error;
+    }
+}
+
+// Ubah daftar transaksi, langsung tulis ke JSON; kalau gagal, batalkan perubahan.
+async function applyChange(newTransactions) {
+    const previous = data.transactions;
+    data.transactions = newTransactions;
+
+    try {
+        await writeFile();
+    } catch (error) {
+        data.transactions = previous;
+        throw error;
+    }
+}
+
+function handleError(error) {
+    console.error(error);
+
+    const name = error && error.name;
+    const message = error && error.message;
+
+    if (name === "AbortError") {
+        setStatus("Dibatalkan. Folder belum dipilih, data belum tersimpan.");
+        return;
+    }
+
+    if (message === "UNSUPPORTED") {
+        alert("Browser ini tidak mendukung penyimpanan langsung ke folder. Gunakan Chrome/Edge versi terbaru.");
+        setStatus("Browser tidak didukung. Pakai Chrome/Edge.");
+        return;
+    }
+
+    if (message === "INVALID_JSON") {
+        alert("File " + JSON_FILE_NAME + " ada di folder itu tapi isinya tidak valid. File tidak ditimpa supaya datamu aman. Periksa atau pindahkan file itu dulu.");
+        setStatus("File JSON tidak valid, tidak ada yang ditimpa.");
+        return;
+    }
+
+    if (name === "NotFoundError") {
+        alert("File " + JSON_FILE_NAME + " tidak ditemukan di folder yang dipilih.");
+        setStatus("File JSON tidak ditemukan di folder itu.");
+        return;
+    }
+
+    if (name === "SecurityError" || name === "NotAllowedError") {
+        alert("Akses ke folder ditolak. Chrome biasanya menolak folder sistem seperti Desktop/Documents/Downloads langsung. Pilih folder biasa (misalnya buat subfolder khusus untuk aplikasi ini).");
+        setStatus("Akses folder ditolak. Perubahan TIDAK tersimpan.");
+        return;
+    }
+
+    alert("Gagal menulis ke file JSON. Perubahan dibatalkan.");
+    setStatus("Gagal menulis ke JSON. Perubahan dibatalkan.");
+}
+
+/* ---------- Tombol toolbar ---------- */
+
+async function saveToFile() {
+    if (busy) return;
+    busy = true;
+
+    try {
+        await ensureConnected();
+        await writeFile();
+        setStatus("JSON tersimpan di folder yang dipilih.");
+    } catch (error) {
+        handleError(error);
+    } finally {
+        busy = false;
+        render();
+    }
+}
+
+async function loadFromFile() {
+    if (busy) return;
+    busy = true;
+
+    try {
+        await connectFolder(true, false);
+        setStatus("JSON berhasil dibuka. Setiap perubahan langsung ditulis ke file ini.");
+    } catch (error) {
+        handleError(error);
+    } finally {
+        busy = false;
+        render();
+    }
+}
+
+async function reloadData() {
+    if (busy) return;
+    busy = true;
+
+    try {
+        // Pakai folder yang sudah dihubungkan. Jika izin browser perlu diperbarui,
+        // tindakan tombol ini menjadi gesture pengguna untuk meminta izin lagi.
+        await connectFolder(false, false);
+        setStatus("Data berhasil dimuat ulang dari " + JSON_FILE_NAME + ".");
+    } catch (error) {
+        handleError(error);
+    } finally {
+        busy = false;
+        render();
+    }
+}
+
+/* ---------- Transaksi ---------- */
+
+function updateForm() {
+    const type = document.getElementById("type").value;
+    const isExpense = type === "expense";
+
+    document.getElementById("category").style.display = isExpense ? "block" : "none";
+    document.getElementById("expenseSource").style.display = isExpense ? "block" : "none";
+    document.getElementById("expenseRow").classList.toggle("income-mode", !isExpense);
+}
+
+function getWalletBalances() {
+    let savings = 0;
+    let safe = 0;
+
+    data.transactions.forEach(t => {
+        if (t.type === "income") {
+            // Setiap pemasukan: 40% tabungan + 60% uang aman diambil.
+            savings += t.amount * 0.40;
+            safe += t.amount * 0.60;
+        } else if (t.type === "expense") {
+            if (t.source === "savings") {
+                savings -= t.amount;
+            } else {
+                // Data lama yang tidak punya source dianggap dari uang aman.
+                safe -= t.amount;
+            }
+        }
+    });
+
+    return {
+        savings: Math.max(0, savings),
+        safe: Math.max(0, safe)
+    };
+}
+
+function getSummary() {
+    let income = 0;
+    let expense = 0;
+
+    data.transactions.forEach(t => {
+        if (t.type === "income") {
+            income += t.amount;
+        } else {
+            expense += t.amount;
+        }
+    });
+
+    return {
+        income: income,
+        expense: expense,
+        balance: income - expense
+    };
+}
+
+function getMonthlySummaries() {
+    const months = new Map();
+
+    data.transactions.forEach(t => {
+        const date = new Date(t.date);
+        if (Number.isNaN(date.getTime())) return;
+
+        // Kunci bulan memakai zona waktu Jakarta agar konsisten di setiap komputer.
+        const parts = new Intl.DateTimeFormat("en-US", {
+            timeZone: "Asia/Jakarta",
+            year: "numeric",
+            month: "2-digit"
+        }).formatToParts(date);
+        const year = Number(parts.find(part => part.type === "year").value);
+        const monthIndex = Number(parts.find(part => part.type === "month").value) - 1;
+        const key = year + "-" + String(monthIndex + 1).padStart(2, "0");
+
+        if (!months.has(key)) {
+            months.set(key, {
+                key,
+                year,
+                monthIndex,
+                income: 0,
+                expense: 0,
+                count: 0
+            });
+        }
+
+        const summary = months.get(key);
+        if (t.type === "income") {
+            summary.income += Number(t.amount) || 0;
+        } else if (t.type === "expense") {
+            summary.expense += Number(t.amount) || 0;
+        }
+        summary.count += 1;
+    });
+
+    return Array.from(months.values()).sort((a, b) => b.key.localeCompare(a.key));
+}
+
+function renderMonthlyHistory() {
+    const container = document.getElementById("monthlyHistory");
+    if (!container) return;
+
+    const summaries = getMonthlySummaries();
+    if (summaries.length === 0) {
+        container.innerHTML = '<tr><td colspan="4" class="empty">Belum ada riwayat bulanan.</td></tr>';
+        return;
+    }
+
+    container.innerHTML = summaries.map(month => {
+        const label = new Intl.DateTimeFormat("id-ID", {
+            timeZone: "Asia/Jakarta",
+            month: "long",
+            year: "numeric"
+        }).format(new Date(Date.UTC(month.year, month.monthIndex, 1, 12)));
+        const net = month.income - month.expense;
+        const netClass = net >= 0 ? "positive" : "negative";
+
+        return `
+            <tr>
+                <td>
+                    <span class="monthly-month">${escapeHTML(label)}</span>
+                    <span class="monthly-count">${month.count} transaksi</span>
+                </td>
+                <td class="monthly-number positive">${money(month.income)}</td>
+                <td class="monthly-number negative">${money(month.expense)}</td>
+                <td class="monthly-number ${netClass}">${money(net)}</td>
+            </tr>
+        `;
+    }).join("");
+}
+
+async function addTransaction() {
+    if (busy) return;
+
+    const type = document.getElementById("type").value;
+    const description = document.getElementById("description").value.trim();
+    const amount = parseFloat(document.getElementById("amount").value) || 0;
+    const category = document.getElementById("category").value;
+    const note = document.getElementById("note").value.trim();
+    const source = document.getElementById("expenseSource").value;
+
+    if (amount <= 0) {
+        alert("Masukkan nominal yang lebih dari 0.");
+        return;
+    }
+
+    if (!description) {
+        alert("Masukkan nama transaksi.");
+        return;
+    }
+
+    busy = true;
+
+    try {
+        // Hubungkan ke folder JSON (pilih folder sekali saja) dan
+        // muat data yang sudah ada supaya tidak tertimpa.
+        await ensureConnected();
+
+        if (type === "expense") {
+            const wallet = getWalletBalances();
+
+            if (source === "safe" && amount > wallet.safe) {
+                alert("Uang Aman Diambil tidak cukup. Tersedia " + money(wallet.safe) + ".");
+                return;
+            }
+
+            if (source === "savings" && amount > wallet.savings) {
+                alert("Tabungan tidak cukup. Tersedia " + money(wallet.savings) + ".");
+                return;
+            }
+        }
+
+        const transaction = {
+            id: Date.now() + "_" + Math.random().toString(36).slice(2),
+            date: new Date().toISOString(),
+            type: type,
+            description: description,
+            amount: amount,
+            currency: CURRENCY,
+            category: type === "expense" ? category : "",
+            source: type === "expense" ? source : "",
+            note: note
+        };
+
+        // Langsung tulis ke file JSON.
+        await applyChange([...data.transactions, transaction]);
+
+        document.getElementById("description").value = "";
+        document.getElementById("amount").value = "";
+        document.getElementById("note").value = "";
+
+        setStatus("Transaksi tersimpan langsung ke " + JSON_FILE_NAME + ".");
+    } catch (error) {
+        handleError(error);
+    } finally {
+        busy = false;
+        render();
+    }
+}
+
+async function removeTransaction(id) {
+    if (busy) return;
+
+    const transaction = data.transactions.find(t => t.id === id);
+
+    if (!transaction) return;
+
+    if (!confirm("Hapus transaksi ini?")) return;
+
+    busy = true;
+
+    try {
+        await ensureConnected();
+        await applyChange(data.transactions.filter(t => t.id !== id));
+        setStatus("Transaksi dihapus dan JSON diperbarui.");
+    } catch (error) {
+        handleError(error);
+    } finally {
+        busy = false;
+        render();
+    }
+}
+
+async function clearAll() {
+    if (busy) return;
+    if (data.transactions.length === 0) return;
+
+    if (!confirm("Hapus SEMUA transaksi? Isi file JSON juga akan dikosongkan.")) {
+        return;
+    }
+
+    busy = true;
+
+    try {
+        await ensureConnected();
+        await applyChange([]);
+        setStatus("Semua transaksi dihapus dan JSON dikosongkan.");
+    } catch (error) {
+        handleError(error);
+    } finally {
+        busy = false;
+        render();
+    }
+}
+
+/* ---------- Render ---------- */
+
+function updateSummary() {
+    const summary = getSummary();
+    const wallet = getWalletBalances();
+
+    document.getElementById("totalIncome").textContent = money(summary.income);
+    document.getElementById("totalExpense").textContent = money(summary.expense);
+    document.getElementById("balance").textContent = money(summary.balance);
+    document.getElementById("totalSavings").textContent = money(wallet.savings);
+    document.getElementById("safeMoney").textContent = money(wallet.safe);
+
+    // Panel pembagian memakai angka yang sama dengan kartu di atas (sisa saldo
+    // setelah pengeluaran), supaya Tabungan dan Aman Diambil tidak pernah beda.
+    const walletTotal = wallet.savings + wallet.safe;
+
+    document.getElementById("splitSavings").textContent = money(wallet.savings);
+    document.getElementById("splitSafe").textContent = money(wallet.safe);
+    document.getElementById("splitTotal").textContent = money(walletTotal);
+
+    const savingsPct = walletTotal > 0 ? (wallet.savings / walletTotal) * 100 : 40;
+    document.getElementById("splitBarSavings").style.width = savingsPct + "%";
+    document.getElementById("splitBarSafe").style.width = (100 - savingsPct) + "%";
+}
+
+function renderHistory() {
+    const history = document.getElementById("history");
+    const transactions = data.transactions.slice().reverse();
+
+    document.getElementById("transactionCount").textContent =
+        transactions.length + " transaksi";
+
+    if (transactions.length === 0) {
+        history.innerHTML = '<div class="empty">Belum ada transaksi.</div>';
+        return;
+    }
+
+    history.innerHTML = transactions.map(t => {
+        const date = new Date(t.date);
+
+        const dateText = isNaN(date)
+            ? ""
+            : date.toLocaleString("id-ID", {
+                dateStyle: "medium",
+                timeStyle: "short"
+            });
+
+        const sign = t.type === "income" ? "+" : "-";
+        const className = t.type === "income" ? "positive" : "negative";
+
+        const sourceText = t.type === "expense"
+            ? (t.source === "savings"
+                ? "Dari Tabungan"
+                : "Dari Uang Aman Diambil")
+            : "";
+
+        const meta = [
+            dateText,
+            t.type === "expense" ? t.category : "Pemasukan",
+            sourceText,
+            t.note ? t.note : ""
+        ].filter(Boolean).join(" • ");
+
+        return `
+            <div class="transaction">
+                <div class="transaction-left">
+                    <div class="transaction-title">
+                        ${escapeHTML(t.description)}
+                    </div>
+                    <div class="transaction-meta">
+                        ${escapeHTML(meta)}
+                    </div>
+                </div>
+
+                <div class="transaction-right">
+                    <div class="transaction-amount ${className}">
+                        ${sign}${money(t.amount)}
+                    </div>
+
+                    <button
+                        class="delete-btn"
+                        onclick="removeTransaction('${escapeHTML(t.id)}')"
+                    >
+                        Hapus
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function render() {
+    // Setiap panel dipisah supaya error di satu bagian tidak mematikan yang lain.
+    try { updateSummary(); } catch (error) { console.error(error); }
+    try { renderMonthlyHistory(); } catch (error) { console.error(error); }
+    try { renderHistory(); } catch (error) { console.error(error); }
+}
+
+function exportCSV() {
+    if (data.transactions.length === 0) {
+        alert("Belum ada transaksi.");
+        return;
+    }
+
+    const rows = [
+        [
+            "Tanggal",
+            "Tipe",
+            "Deskripsi",
+            "Jumlah",
+            "Mata Uang",
+            "Kategori",
+            "Sumber Dana",
+            "Catatan"
+        ]
+    ];
+
+    data.transactions.forEach(t => {
+        rows.push([
+            new Date(t.date).toLocaleString("id-ID"),
+            t.type === "income" ? "Pemasukan" : "Pengeluaran",
+            t.description,
+            t.amount,
+            CURRENCY,
+            t.category,
+            t.source === "savings"
+                ? "Tabungan"
+                : (t.source === "safe" ? "Uang Aman Diambil" : ""),
+            t.note
+        ]);
+    });
+
+    const csv = rows.map(row =>
+        row.map(value =>
+            '"' + String(value ?? "").replaceAll('"', '""') + '"'
+        ).join(",")
+    ).join("\n");
+
+    const blob = new Blob(
+        ["\uFEFF" + csv],
+        { type: "text/csv;charset=utf-8;" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "freelance-transactions.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+/* ---------- Start ---------- */
+
+async function tryLoadSiblingJson() {
+    // Fallback ini hanya bisa bekerja saat HTML disajikan melalui localhost/HTTPS.
+    // Pada file://, browser biasanya memblokir fetch ke file saudara demi keamanan.
+    try {
+        const response = await fetch("./" + JSON_FILE_NAME, { cache: "no-store" });
+        if (!response.ok) return false;
+
+        const parsed = await response.json();
+        if (!parsed || !Array.isArray(parsed.transactions)) {
+            throw new Error("INVALID_JSON");
+        }
+
+        data = normalizeData(parsed);
+        return true;
+    } catch (error) {
+        console.info("JSON sibling tidak dapat dimuat otomatis melalui fetch:", error);
+        return false;
+    }
+}
+
+async function restoreOnLoad() {
+    const supportsFolderAccess = "showDirectoryPicker" in window;
+
+    if (!supportsFolderAccess) {
+        const loaded = await tryLoadSiblingJson();
+        setStatus(loaded
+            ? "Data berhasil dibaca dari JSON. Browser ini tidak mendukung simpan langsung; gunakan Chrome/Edge untuk menghubungkan folder."
+            : "Browser ini tidak mendukung akses folder. Gunakan Chrome/Edge versi terbaru.");
+        render();
+        return;
+    }
+
+    const saved = await loadSavedHandle();
+
+    if (!saved) {
+        const loaded = await tryLoadSiblingJson();
+        setStatus(loaded
+            ? "Data berhasil dibaca dari JSON. Klik Pilih Folder JSON sekali untuk mengaktifkan penyimpanan langsung."
+            : "Belum terhubung. Letakkan HTML dan JSON dalam satu folder, lalu klik Pilih Folder JSON dan pilih folder tersebut.");
+        render();
+        return;
+    }
+
+    if (!(await hasPermission(saved, false))) {
+        const loaded = await tryLoadSiblingJson();
+        setStatus(loaded
+            ? "Data berhasil dibaca dari JSON, tetapi izin folder untuk menyimpan perlu diperbarui. Klik Muat Ulang JSON atau Pilih Folder JSON."
+            : "Folder JSON diingat, tetapi browser meminta izin lagi. Klik Muat Ulang JSON atau Pilih Folder JSON.");
+        render();
+        return;
+    }
+
+    try {
+        dataDirectoryHandle = saved;
+        await readDataFromDirectory(false);
+        setStatus("Data otomatis dimuat dari " + JSON_FILE_NAME + ". Setiap perubahan langsung disimpan ke file ini.");
+    } catch (error) {
+        dataDirectoryHandle = null;
+        fileHandle = null;
+
+        if (error && error.name === "NotFoundError") {
+            const loaded = await tryLoadSiblingJson();
+            setStatus(loaded
+                ? "Data dibaca dari JSON. File belum ditemukan di folder tersimpan; klik Pilih Folder JSON untuk memilih folder yang benar."
+                : "Folder terhubung, tetapi " + JSON_FILE_NAME + " belum ada. Letakkan file JSON di folder HTML lalu klik Muat Ulang JSON.");
+        } else {
+            setStatus("Gagal memuat JSON dari folder tersimpan. Klik Pilih Folder JSON untuk memilih ulang.");
+        }
+    } finally {
+        render();
+    }
+}
+
+updateForm();
+render();
+restoreOnLoad();
+</script>
+
+</body>
+</html>
